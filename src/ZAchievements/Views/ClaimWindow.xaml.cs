@@ -121,9 +121,11 @@ namespace ZAchievements.Views
             }
 
             this._signInWatch.Stop();
+            this.Headline.Text = "Signed in";
             this.PrepareQueue();
         }
 
+        /// <summary>Recounts what is left. Never touches the headline: that reports the last run.</summary>
         private void PrepareQueue()
         {
             var apps = this._steam.Client.SteamApps008;
@@ -132,7 +134,6 @@ namespace ZAchievements.Views
                 .Where(id => this._log.Knows(id) == false && apps.IsSubscribedApp(id) == false)
                 .ToArray();
 
-            this.Headline.Text = "Signed in";
             this.Progress.Maximum = Math.Max(1, this._queue.Length);
             this.Progress.Value = 0;
 
@@ -146,13 +147,16 @@ namespace ZAchievements.Views
             this.StatusText.Text =
                 $"{this._queue.Length:N0} free games to claim" +
                 (this._log.Count > 0 ? $" · {this._log.Count:N0} already tried in earlier runs" : "");
-            this.DetailText.Text = $"About {Estimate(this._queue.Length)} at one request every {RequestSpacingMs / 1000.0:0.0}s, pauses aside.";
+            this.DetailText.Text =
+                $"About {Estimate(this._queue.Length)}: every game costs a page read plus the request, " +
+                $"{RequestSpacingMs / 1000.0:0.0}s apart.";
             this.StartButton.IsEnabled = true;
         }
 
         private static string Estimate(int count)
         {
-            var span = TimeSpan.FromMilliseconds((double)count * RequestSpacingMs);
+            // The store page is a fat read; call it the better part of a second on top.
+            var span = TimeSpan.FromMilliseconds((double)count * (RequestSpacingMs + 800));
             return span.TotalHours >= 1
                 ? $"{span.TotalHours:0.#} hours"
                 : $"{span.TotalMinutes:0} minutes";
@@ -277,7 +281,7 @@ namespace ZAchievements.Views
             this.Progress.Value = done;
             this.StatusText.Text =
                 $"{done:N0} of {this._queue.Length:N0} · {Number(tally, "added"):N0} added · " +
-                $"{Number(tally, "already"):N0} already owned · {Number(tally, "refused"):N0} refused";
+                $"{Number(tally, "skipped"):N0} nothing to claim · {Number(tally, "refused"):N0} refused";
         }
 
         private void Close(JsonElement message)

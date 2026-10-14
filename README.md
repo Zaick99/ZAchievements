@@ -59,6 +59,11 @@ way: it opens Steam's own store in an embedded browser, you sign in there, and t
 sees your password, your Steam Guard code or your session token; the browser profile lives in
 `%LOCALAPPDATA%\ZAchievements\webview` and you can wipe it by deleting that folder.
 
+It takes two steps per game, because that endpoint wants a **package** id and not an app id, and the
+free package is only named on the app page a signed-in visitor sees — as the argument of the store's
+own `AddFreeLicense(…)` button. The cart's package is deliberately ignored: that one is the paid
+edition, and asking for it free is what earns a 403.
+
 What to expect:
 
 - **It is slow on purpose.** One request every 1.2 s, and Steam caps free activations anyway. When
@@ -66,7 +71,10 @@ What to expect:
   to come back later.
 - **It resumes.** Every app already offered is remembered in `claimed.txt`, so pressing *Claim them*
   again picks up where it stopped. *Start over* forgets that list.
-- **Games you already own are skipped** before the first request goes out.
+- **Games you already own are skipped** before the first request goes out, and games whose page
+  offers nothing free are counted and passed over.
+- **Steam's client lags.** A licence lands on the account immediately, but the running Steam client
+  can take a minute to notice. The library count catches up on the next rescan.
 - **Your library will grow a lot.** All of Steam's free games is tens of thousands of entries, and
   removing a licence afterwards is a one-at-a-time job on Steam's support site. Use the *Free* filter
   first if you only want a slice of it.

@@ -496,10 +496,10 @@ namespace ZAchievements.Views
             var confirmed = Dialog.Confirm(
                 this,
                 "Unlock every achievement?",
-                $"ZAchievements will walk through {games.Length:N0} games and unlock every achievement " +
-                "it is allowed to touch. Steam keeps the unlock dates, so this cannot be undone from here." +
+                $"ZAchievements will walk through {Plural.Of(games.Length, "game", "games")} and unlock every " +
+                "achievement it is allowed to touch. Steam keeps the unlock dates, so this cannot be undone from here." +
                 warning,
-                $"Unlock {games.Length:N0} games",
+                "Unlock " + Plural.Of(games.Length, "game", "games"),
                 danger: true);
 
             if (confirmed == true)
@@ -528,8 +528,8 @@ namespace ZAchievements.Views
                 }
 
                 this.BulkGame.Text = game.Name;
-                this.BulkCount.Text = $"{done:N0} of {games.Count:N0} games";
-                this.BulkTally.Text = $"{unlocked:N0} achievements unlocked";
+                this.BulkCount.Text = $"{done:N0} of {Plural.Of(games.Count, "game", "games")}";
+                this.BulkTally.Text = Plural.Of(unlocked, "achievement", "achievements") + " unlocked";
 
                 var result = await BulkUnlock.RunOneAsync(game.Id, this._bulkStop.Token);
                 if (result.HasValue == true)
@@ -552,8 +552,11 @@ namespace ZAchievements.Views
             Dialog.Note(
                 this,
                 "Done",
-                $"{unlocked:N0} achievements unlocked across {done:N0} games." +
-                (refused > 0 ? $"\n{refused:N0} games had nothing ZAchievements could change." : ""));
+                $"{Plural.Of(unlocked, "achievement", "achievements")} unlocked across " +
+                $"{Plural.Of(done, "game", "games")}." +
+                (refused > 0
+                    ? $"\n{Plural.Of(refused, "game", "games")} had nothing ZAchievements could change."
+                    : ""));
         }
 
         private void OnStopBulk(object sender, RoutedEventArgs e)

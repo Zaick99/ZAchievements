@@ -302,6 +302,8 @@
   <!-- ===================== text input ===================== -->
 
   <Style x:Key="SearchBox" TargetType="TextBox">
+    <!-- The placeholder doubles as the accessible name. -->
+    <Setter Property="AutomationProperties.Name" Value="{Binding Tag, RelativeSource={RelativeSource Self}}" />
     <Setter Property="Foreground" Value="{StaticResource Text}" />
     <Setter Property="CaretBrush" Value="{StaticResource Accent}" />
     <Setter Property="SelectionBrush" Value="{StaticResource Accent}" />
@@ -610,7 +612,11 @@
                     Padding="3">
               <TabPanel IsItemsHost="True" />
             </Border>
-            <ContentPresenter Grid.Row="1" Margin="0,14,0,0" ContentSource="SelectedContent" />
+            <!-- The name matters: WPF reaches the selected tab's content through it,
+                 and without it everything inside a tab is invisible to assistive tools. -->
+            <ContentPresenter x:Name="PART_SelectedContentHost"
+                              Grid.Row="1" Margin="0,14,0,0"
+                              ContentSource="SelectedContent" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>

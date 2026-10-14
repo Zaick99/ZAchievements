@@ -27,10 +27,10 @@
           <TextBlock Style="{StaticResource CaptionTitle}" Margin="9,0,0,0" Text="Claim free games" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-          <Button Style="{StaticResource CaptionButton}" Content="&#xE921;"
+          <Button Style="{StaticResource CaptionButton}" Content="&#xE921;" AutomationProperties.Name="Minimize"
                   Command="{x:Static SystemCommands.MinimizeWindowCommand}" />
-          <Button Style="{StaticResource CaptionButton}" Content="&#xE922;" Click="OnMaximize" />
-          <Button Style="{StaticResource CloseButton}" Content="&#xE8BB;"
+          <Button Style="{StaticResource CaptionButton}" Content="&#xE922;" AutomationProperties.Name="Maximize" Click="OnMaximize" />
+          <Button Style="{StaticResource CloseButton}" Content="&#xE8BB;" AutomationProperties.Name="Close"
                   Command="{x:Static SystemCommands.CloseWindowCommand}" />
         </StackPanel>
       </Grid>

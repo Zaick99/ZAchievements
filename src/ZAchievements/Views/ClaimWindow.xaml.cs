@@ -145,7 +145,7 @@ namespace ZAchievements.Views
             }
 
             this.StatusText.Text =
-                $"{this._queue.Length:N0} free games to claim" +
+                $"{Plural.Of(this._queue.Length, "free game", "free games")} to claim" +
                 (this._log.Count > 0 ? $" · {this._log.Count:N0} already tried in earlier runs" : "");
             this.DetailText.Text =
                 $"About {Estimate(this._queue.Length)}: every game costs a page read plus the request, " +
@@ -300,7 +300,7 @@ namespace ZAchievements.Views
                 _ => "Finished.",
             };
 
-            this.Finish($"{added:N0} games added", reason);
+            this.Finish(Plural.Of(added, "game", "games") + " added", reason);
         }
 
         private void Finish(string headline, string detail)

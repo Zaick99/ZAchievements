@@ -22,6 +22,7 @@
             RenderTransformOrigin="0.5,0.5"
             Loaded="OnCardRealized"
             MouseLeftButtonUp="OnCardClicked"
+            AutomationProperties.Name="{Binding Name}"
             ToolTip="{Binding Name}">
         <Grid.RenderTransform>
           <ScaleTransform ScaleX="1" ScaleY="1" />
@@ -197,10 +198,10 @@
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True">
-          <Button Style="{StaticResource CaptionButton}" Content="&#xE921;"
+          <Button Style="{StaticResource CaptionButton}" Content="&#xE921;" AutomationProperties.Name="Minimize"
                   Command="{x:Static SystemCommands.MinimizeWindowCommand}" />
-          <Button Style="{StaticResource CaptionButton}" Content="&#xE922;" Click="OnMaximize" />
-          <Button Style="{StaticResource CloseButton}" Content="&#xE8BB;"
+          <Button Style="{StaticResource CaptionButton}" Content="&#xE922;" AutomationProperties.Name="Maximize" Click="OnMaximize" />
+          <Button Style="{StaticResource CloseButton}" Content="&#xE8BB;" AutomationProperties.Name="Close"
                   Command="{x:Static SystemCommands.CloseWindowCommand}" />
         </StackPanel>
       </Grid>
@@ -253,7 +254,7 @@
         <Button x:Name="ReloadButton"
                 Style="{StaticResource IconButton}"
                 Margin="8,0,0,0"
-                Content="&#xE72C;"
+                Content="&#xE72C;" AutomationProperties.Name="Reload"
                 ToolTip="Rescan the library"
                 Click="OnReload" />
       </StackPanel>

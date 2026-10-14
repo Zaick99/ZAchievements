@@ -26,7 +26,7 @@
                    Text="ZAchievements" />
         <Button Style="{StaticResource CloseButton}"
                 HorizontalAlignment="Right"
-                Content="&#xE8BB;"
+                Content="&#xE8BB;" AutomationProperties.Name="Close"
                 Command="{x:Static SystemCommands.CloseWindowCommand}" />
       </Grid>
     </Border>

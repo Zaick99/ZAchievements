@@ -109,6 +109,7 @@
 
           <ToggleButton Grid.Column="5" Style="{StaticResource SwitchToggle}" Margin="16,0,8,0"
                         VerticalAlignment="Center"
+                        AutomationProperties.Name="{Binding Name}"
                         IsChecked="{Binding IsUnlocked, Mode=TwoWay}" />
         </Grid>
       </Border>
@@ -130,6 +131,7 @@
 
           <TextBox Grid.Column="1" Style="{StaticResource ValueBox}" VerticalAlignment="Center"
                    Margin="0,0,12,0"
+                   AutomationProperties.Name="{Binding DisplayName}"
                    IsEnabled="{Binding IsEditable}"
                    Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
@@ -168,10 +170,10 @@
                          Text="ZAchievements" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-              <Button Style="{StaticResource CaptionButton}" Content="&#xE921;"
+              <Button Style="{StaticResource CaptionButton}" Content="&#xE921;" AutomationProperties.Name="Minimize"
                       Command="{x:Static SystemCommands.MinimizeWindowCommand}" />
-              <Button Style="{StaticResource CaptionButton}" Content="&#xE922;" Click="OnMaximize" />
-              <Button Style="{StaticResource CloseButton}" Content="&#xE8BB;"
+              <Button Style="{StaticResource CaptionButton}" Content="&#xE922;" AutomationProperties.Name="Maximize" Click="OnMaximize" />
+              <Button Style="{StaticResource CloseButton}" Content="&#xE8BB;" AutomationProperties.Name="Close"
                       Command="{x:Static SystemCommands.CloseWindowCommand}" />
             </StackPanel>
           </Grid>
@@ -238,7 +240,7 @@
           <CheckBox x:Name="AllowStatEditing" Grid.Column="1" Style="{StaticResource CheckSwitch}"
                     Margin="14,0,0,0" VerticalAlignment="Center"
                     Content="I know editing statistics can break a game"
-                    Click="OnStatEditingToggled" />
+                    Checked="OnStatEditingToggled" Unchecked="OnStatEditingToggled" />
         </Grid>
       </TabItem>
     </TabControl>
@@ -285,7 +287,7 @@
                   Click="OnReset" />
           <Button x:Name="LockAllButton" Style="{StaticResource GhostButton}" Content="Lock all"
                   Margin="8,0,0,0" Click="OnLockAll" />
-          <Button x:Name="ReloadButton" Style="{StaticResource IconButton}" Content="&#xE72C;"
+          <Button x:Name="ReloadButton" Style="{StaticResource IconButton}" Content="&#xE72C;" AutomationProperties.Name="Reload"
                   Margin="8,0,0,0" ToolTip="Reload from Steam" Click="OnReload" />
           <Button x:Name="SaveButton" Style="{StaticResource GhostButton}" Content="Save changes"
                   Margin="8,0,0,0" Click="OnSave" />

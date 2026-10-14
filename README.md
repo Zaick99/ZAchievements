@@ -51,6 +51,10 @@ No installer. No .NET runtime to install. No loose DLLs. Download, run, unlock.
 That is the whole installation. One 55 MB file, self-contained, x86 — Steam's `steamclient.dll` is
 32-bit, so the process has to be too.
 
+> Windows SmartScreen will warn about it: the executable is not code-signed, because a certificate
+> costs more than this tool is worth. *More info → Run anyway*, or build it yourself from source —
+> the command is at the bottom of this page.
+
 ---
 
 ## How it differs from the original SAM

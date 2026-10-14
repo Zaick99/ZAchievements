@@ -66,11 +66,14 @@ edition, and asking for it free is what earns a 403.
 
 What to expect:
 
-- **It is slow on purpose.** One request every 1.2 s, and Steam caps free activations anyway. When
-  the cap hits, the run pauses 90 s and carries on; if Steam keeps refusing, it stops and tells you
-  to come back later.
-- **It resumes.** Every app already offered is remembered in `claimed.txt`, so pressing *Claim them*
-  again picks up where it stopped. *Start over* forgets that list.
+- **Steam grants only a few dozen free licences an hour.** This is the hard limit, and there is no
+  way around it. Past the quota Steam keeps answering `200` while granting nothing, so every claim is
+  checked against `appuserdetails` afterwards: a game counts as added only when Steam says the
+  account owns it. When the quota runs out the window waits a quarter of an hour and carries on; you
+  can leave it open for as long as you like.
+- **It resumes, and it does not lose anything.** Only settled answers — granted, or nothing free to
+  grant — are written to `settled.txt`. Games Steam silently refused stay in the queue for the next
+  attempt. *Start over* forgets the list entirely.
 - **Games you already own are skipped** before the first request goes out, and games whose page
   offers nothing free are counted and passed over.
 - **Steam's client lags.** A licence lands on the account immediately, but the running Steam client

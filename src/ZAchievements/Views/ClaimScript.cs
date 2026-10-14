@@ -3,11 +3,12 @@ namespace ZAchievements.Views
     /// <summary>
     /// The script that runs inside the Steam store page.
     ///
-    /// Two steps per game, because the endpoint takes a package id and not an app id:
-    /// the free package is only named on the app page a signed-in visitor sees, as the
-    /// argument of the store's own <c>AddFreeLicense(subid)</c> button. The cart's
-    /// <c>subid</c> is deliberately ignored — that one is the paid package, and asking
-    /// for it free is what earns a 403.
+    /// Three steps per game. The endpoint takes a package id, so the free package is
+    /// read off the app page first, as the argument of the store's own
+    /// <c>AddFreeLicense(subid)</c> button — the cart's subid is the paid edition and
+    /// is left alone. Then the claim. Then the truth: past its hourly quota Steam keeps
+    /// answering <c>200</c> while granting nothing, so the only honest success signal is
+    /// asking whether the account owns the game afterwards.
     /// </summary>
     internal static class ClaimScript
     {
@@ -19,14 +20,16 @@ namespace ZAchievements.Views
 
               const say = (m) => window.chrome.webview.postMessage(JSON.stringify(m));
               const nap = (ms) => new Promise(r => setTimeout(r, ms));
-              const rateLimited = (status, text) => status === 429 || /rate\s*limit|too many requests/i.test(text);
+
+              const PAUSE_SECONDS = 900;   // a quarter hour: Steam's free-licence quota refills hourly
+              const BLOCKED_STREAK = 3;    // silent refusals in a row before believing it
+              const MAX_PAUSES = 4;        // an hour of waiting with nothing granted is enough
 
               async function freeSubOf(id) {
                 const res = await fetch('/app/' + id + '/?l=english', { credentials: 'include' });
-                if (!res.ok) { return { status: res.status, text: '' }; }
-                const html = await res.text();
-                const free = html.match(/AddFreeLicense\(\s*(\d+)/);
-                return { status: res.status, sub: free ? free[1] : null };
+                if (!res.ok) { return null; }
+                const free = (await res.text()).match(/AddFreeLicense\(\s*(\d+)/);
+                return free ? free[1] : null;
               }
 
               async function claim(sub, sessionid) {
@@ -39,7 +42,12 @@ namespace ZAchievements.Views
                   },
                   body: 'ajax=true&sessionid=' + encodeURIComponent(sessionid)
                 });
-                return { status: res.status, text: (await res.text()).slice(0, 200) };
+                return res.status + ' ' + (await res.text()).slice(0, 120);
+              }
+
+              async function owns(id) {
+                const res = await fetch('/api/appuserdetails/?appids=' + id, { credentials: 'include' });
+                return /"is_owned"\s*:\s*true/.test(await res.text());
               }
 
               za.run = async function (ids, delay) {
@@ -47,52 +55,52 @@ namespace ZAchievements.Views
                                   (document.cookie.match(/(?:^|;\s*)sessionid=([^;]+)/) || [])[1];
                 if (!sessionid) { say({ kind: 'fatal', text: 'No store session. Sign in first.' }); return; }
 
-                const tally = { done: 0, added: 0, skipped: 0, refused: 0 };
+                const tally = { done: 0, added: 0, skipped: 0, blocked: 0 };
+                let streak = 0;
+                let pauses = 0;
                 let samples = 0;
-                let stalls = 0;
 
                 for (const id of ids) {
                   if (za.stop) { say({ kind: 'end', reason: 'stopped', tally }); return; }
 
-                  let outcome = 'refused';
+                  let outcome = 'blocked';
                   let detail = '';
 
-                  for (let attempt = 0; attempt < 2; attempt++) {
+                  while (true) {
                     try {
-                      const page = await freeSubOf(id);
-                      if (rateLimited(page.status, '')) { outcome = 'limited'; detail = 'page ' + page.status; }
-                      else if (!page.sub) { outcome = 'skipped'; detail = 'no free package on the page'; }
-                      else {
-                        const answer = await claim(page.sub, sessionid);
-                        detail = 'sub ' + page.sub + ' -> ' + answer.status + ' ' + answer.text;
-                        outcome = rateLimited(answer.status, answer.text) ? 'limited'
-                                : answer.status === 200 ? 'added'
-                                : 'refused';
+                      const sub = await freeSubOf(id);
+                      if (!sub) {
+                        outcome = 'skipped';
+                        detail = 'no free package offered on the page';
+                      } else {
+                        detail = 'sub ' + sub + ' -> ' + await claim(sub, sessionid);
+                        outcome = await owns(id) ? 'added' : 'blocked';
                       }
                     } catch (e) {
-                      outcome = 'refused';
+                      outcome = 'blocked';
                       detail = String(e);
                     }
 
-                    if (outcome !== 'limited') break;
+                    if (outcome !== 'blocked') { streak = 0; break; }
 
-                    // Steam caps free activations: breathe, then try this one once more.
-                    stalls++;
-                    if (stalls > 3) { say({ kind: 'end', reason: 'limited', tally, detail }); return; }
-                    say({ kind: 'wait', seconds: 90, detail });
-                    await nap(90000);
+                    // Steam answers 200 and grants nothing once the quota is spent.
+                    if (++streak < BLOCKED_STREAK) { break; }
+                    if (++pauses > MAX_PAUSES) { say({ kind: 'end', reason: 'quota', tally, detail }); return; }
+
+                    say({ kind: 'wait', seconds: PAUSE_SECONDS, detail: detail });
+                    await nap(PAUSE_SECONDS * 1000);
+                    streak = 0;
+                    if (za.stop) { say({ kind: 'end', reason: 'stopped', tally }); return; }
                   }
-
-                  if (outcome === 'limited') { say({ kind: 'end', reason: 'limited', tally, detail }); return; }
-                  if (outcome === 'added') stalls = 0;
 
                   tally.done++;
                   tally[outcome] = (tally[outcome] || 0) + 1;
 
-                  // The first answers are echoed back so the window can show what Steam really replies.
                   if (samples < 3) { samples++; say({ kind: 'sample', id: id, outcome: outcome, detail: detail }); }
 
-                  say({ kind: 'tick', id: id, outcome: outcome, tally: tally });
+                  // Only a settled answer is worth remembering: a game Steam silently
+                  // refused must stay in the queue for the next run.
+                  say({ kind: 'tick', id: id, outcome: outcome, tally: tally, settled: outcome !== 'blocked' });
                   await nap(delay);
                 }
 

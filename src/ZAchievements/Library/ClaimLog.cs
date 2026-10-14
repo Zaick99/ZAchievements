@@ -7,8 +7,9 @@ using ZAchievements.Infra;
 namespace ZAchievements.Library
 {
     /// <summary>
-    /// The apps already offered to Steam, so a claim run interrupted by a rate
-    /// limit picks up where it stopped instead of starting over.
+    /// The apps Steam has given a settled answer about — granted, or nothing free to
+    /// grant — so a run picks up where it stopped. Games Steam silently refused are
+    /// deliberately absent: they are still worth asking for once the quota refills.
     /// </summary>
     internal sealed class ClaimLog
     {
@@ -17,7 +18,7 @@ namespace ZAchievements.Library
 
         public ClaimLog()
         {
-            this._path = Path.Combine(AppPaths.Data, "claimed.txt");
+            this._path = Path.Combine(AppPaths.Data, "settled.txt");
             this.Read();
         }
 

@@ -21,8 +21,9 @@ namespace ZAchievements.Views
     /// </summary>
     internal partial class ClaimWindow : ShellWindow
     {
-        private const int RequestSpacingMs = 1200;
-        private const int LogBatch = 25;
+        private const int RequestSpacingMs = 2000;
+        // One line every couple of seconds costs nothing, and a hard kill loses nothing.
+        private const int LogBatch = 1;
 
         private static readonly TimeSpan SignInPoll = TimeSpan.FromSeconds(2);
         private static readonly Uri Store = new("https://store.steampowered.com/");
@@ -148,18 +149,9 @@ namespace ZAchievements.Views
                 $"{Plural.Of(this._queue.Length, "free game", "free games")} to claim" +
                 (this._log.Count > 0 ? $" · {this._log.Count:N0} already tried in earlier runs" : "");
             this.DetailText.Text =
-                $"About {Estimate(this._queue.Length)}: every game costs a page read plus the request, " +
-                $"{RequestSpacingMs / 1000.0:0.0}s apart.";
+                "Steam grants only a few dozen free licences an hour, so this runs for as long as it is " +
+                "allowed, waits, and carries on. Leave it open, or come back and press Claim again.";
             this.StartButton.IsEnabled = true;
-        }
-
-        private static string Estimate(int count)
-        {
-            // The store page is a fat read; call it the better part of a second on top.
-            var span = TimeSpan.FromMilliseconds((double)count * (RequestSpacingMs + 800));
-            return span.TotalHours >= 1
-                ? $"{span.TotalHours:0.#} hours"
-                : $"{span.TotalMinutes:0} minutes";
         }
 
         // ============================ running ============================
@@ -236,7 +228,10 @@ namespace ZAchievements.Views
 
                 case "wait":
                 {
-                    this.StatusText.Text = "Steam asked for a pause — waiting 90 seconds, then carrying on.";
+                    var minutes = Math.Max(1, Number(message, "seconds") / 60);
+                    this.StatusText.Text =
+                        $"Steam has stopped granting — its quota is spent. Waiting {minutes} minutes, " +
+                        "then carrying on. You can leave this open.";
                     break;
                 }
 
@@ -262,7 +257,12 @@ namespace ZAchievements.Views
 
         private void Advance(JsonElement message)
         {
-            if (message.TryGetProperty("id", out var id) == true && id.TryGetUInt32(out var appId) == true)
+            var settled = message.TryGetProperty("settled", out var flag) == true &&
+                          flag.ValueKind == JsonValueKind.True;
+
+            if (settled == true &&
+                message.TryGetProperty("id", out var id) == true &&
+                id.TryGetUInt32(out var appId) == true)
             {
                 this._pendingLog.Add(appId);
                 if (this._pendingLog.Count >= LogBatch)
@@ -281,7 +281,7 @@ namespace ZAchievements.Views
             this.Progress.Value = done;
             this.StatusText.Text =
                 $"{done:N0} of {this._queue.Length:N0} · {Number(tally, "added"):N0} added · " +
-                $"{Number(tally, "skipped"):N0} nothing to claim · {Number(tally, "refused"):N0} refused";
+                $"{Number(tally, "skipped"):N0} nothing free · {Number(tally, "blocked"):N0} refused by Steam";
         }
 
         private void Close(JsonElement message)
@@ -295,8 +295,9 @@ namespace ZAchievements.Views
             var reason = Text(message, "reason") switch
             {
                 "stopped" => "Stopped.",
-                "limited" => "Steam is rate limiting the account. Come back in an hour and press Claim again — " +
-                             "ZAchievements remembers where it stopped.",
+                "quota" => "Steam kept refusing after an hour of waiting: its free-licence quota is spent for " +
+                           "now. Nothing is lost — press Claim them again later and the refused games are " +
+                           "still in the queue.",
                 _ => "Finished.",
             };
 

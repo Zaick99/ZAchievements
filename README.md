@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="src/ZAchievements/Assets/ZAchievements.ico" width="72" alt="ZAchievements">
+<img src="docs/icon.png" width="72" alt="ZAchievements">
 
 # ZAchievements
 

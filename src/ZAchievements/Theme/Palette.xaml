@@ -1,0 +1,84 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+  <!-- Surfaces: near-black, lifted one step at a time. -->
+  <Color x:Key="BaseColor">#FF0C0A0F</Color>
+  <Color x:Key="SunkenColor">#FF08060B</Color>
+  <Color x:Key="SurfaceColor">#FF17131C</Color>
+  <Color x:Key="SurfaceHoverColor">#FF221B29</Color>
+  <Color x:Key="SurfacePressColor">#FF2B2234</Color>
+
+  <!-- Accent: the pink straight out of the application icon. -->
+  <Color x:Key="AccentColor">#FFFF80C0</Color>
+  <Color x:Key="AccentBrightColor">#FFFFA6D5</Color>
+  <Color x:Key="AccentDeepColor">#FFD4519B</Color>
+  <Color x:Key="DangerColor">#FFF85149</Color>
+  <Color x:Key="DangerDeepColor">#FFB62324</Color>
+  <Color x:Key="WarnColor">#FFD29922</Color>
+
+  <Color x:Key="TextColor">#FFF2E9F0</Color>
+  <Color x:Key="TextMutedColor">#FF9C8FA6</Color>
+  <Color x:Key="TextFaintColor">#FF6B5F75</Color>
+
+  <SolidColorBrush x:Key="Base" Color="{StaticResource BaseColor}" />
+  <SolidColorBrush x:Key="Sunken" Color="{StaticResource SunkenColor}" />
+  <SolidColorBrush x:Key="Surface" Color="{StaticResource SurfaceColor}" />
+  <SolidColorBrush x:Key="SurfaceHover" Color="{StaticResource SurfaceHoverColor}" />
+  <SolidColorBrush x:Key="Accent" Color="{StaticResource AccentColor}" />
+  <SolidColorBrush x:Key="AccentBright" Color="{StaticResource AccentBrightColor}" />
+  <SolidColorBrush x:Key="AccentDeep" Color="{StaticResource AccentDeepColor}" />
+  <SolidColorBrush x:Key="Danger" Color="{StaticResource DangerColor}" />
+  <SolidColorBrush x:Key="Warn" Color="{StaticResource WarnColor}" />
+  <SolidColorBrush x:Key="Text" Color="{StaticResource TextColor}" />
+  <SolidColorBrush x:Key="TextMuted" Color="{StaticResource TextMutedColor}" />
+  <SolidColorBrush x:Key="TextFaint" Color="{StaticResource TextFaintColor}" />
+
+  <SolidColorBrush x:Key="Hairline" Color="#FFFFFFFF" Opacity="0.08" />
+  <SolidColorBrush x:Key="HairlineStrong" Color="#FFFFFFFF" Opacity="0.16" />
+  <SolidColorBrush x:Key="Scrim" Color="#FF000000" Opacity="0.55" />
+  <SolidColorBrush x:Key="Transparent" Color="Transparent" />
+
+  <LinearGradientBrush x:Key="AccentFill" StartPoint="0,0" EndPoint="1,1">
+    <GradientStop Offset="0" Color="{StaticResource AccentBrightColor}" />
+    <GradientStop Offset="1" Color="{StaticResource AccentDeepColor}" />
+  </LinearGradientBrush>
+
+  <LinearGradientBrush x:Key="DangerFill" StartPoint="0,0" EndPoint="1,1">
+    <GradientStop Offset="0" Color="{StaticResource DangerColor}" />
+    <GradientStop Offset="1" Color="{StaticResource DangerDeepColor}" />
+  </LinearGradientBrush>
+
+  <LinearGradientBrush x:Key="HeaderFill" StartPoint="0,0" EndPoint="0,1">
+    <GradientStop Offset="0" Color="#FF1F1826" />
+    <GradientStop Offset="1" Color="{StaticResource BaseColor}" />
+  </LinearGradientBrush>
+
+  <LinearGradientBrush x:Key="BannerScrim" StartPoint="0,0" EndPoint="0,1">
+    <GradientStop Offset="0" Color="#9E0C0A0F" />
+    <GradientStop Offset="0.65" Color="#E60C0A0F" />
+    <GradientStop Offset="1" Color="{StaticResource BaseColor}" />
+  </LinearGradientBrush>
+
+  <!-- Geometry and rhythm -->
+  <CornerRadius x:Key="RadiusSmall">6</CornerRadius>
+  <CornerRadius x:Key="Radius">10</CornerRadius>
+  <CornerRadius x:Key="RadiusLarge">14</CornerRadius>
+  <sys:Double x:Key="RowHeight">68</sys:Double>
+
+  <FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI</FontFamily>
+  <FontFamily x:Key="DisplayFont">Segoe UI Variable Display, Segoe UI Semibold, Segoe UI</FontFamily>
+
+  <sys:Double x:Key="FontTiny">11</sys:Double>
+  <sys:Double x:Key="FontSmall">12</sys:Double>
+  <sys:Double x:Key="FontBody">13</sys:Double>
+  <sys:Double x:Key="FontTitle">16</sys:Double>
+  <sys:Double x:Key="FontDisplay">24</sys:Double>
+
+  <Duration x:Key="Quick">0:0:0.14</Duration>
+  <Duration x:Key="Smooth">0:0:0.28</Duration>
+
+  <CubicEase x:Key="EaseOut" EasingMode="EaseOut" />
+  <QuadraticEase x:Key="EaseInOut" EasingMode="EaseInOut" />
+
+</ResourceDictionary>

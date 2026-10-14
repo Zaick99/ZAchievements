@@ -1,0 +1,311 @@
+<views:ShellWindow x:Class="ZAchievements.Views.LibraryWindow"
+                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:views="clr-namespace:ZAchievements.Views"
+                   xmlns:library="clr-namespace:ZAchievements.Library"
+                   x:ClassModifier="internal"
+                   Style="{StaticResource Shell}"
+                   Title="ZAchievements"
+                   Width="1080" Height="720"
+                   MinWidth="720" MinHeight="460"
+                   WindowStartupLocation="CenterScreen">
+
+  <views:ShellWindow.Resources>
+
+    <!-- One game: capsule, name, app id. Lifts and glows under the pointer. -->
+    <DataTemplate x:Key="GameCard" DataType="{x:Type library:GameEntry}">
+      <Grid x:Name="Card"
+            Width="196" Height="134"
+            Margin="0,0,12,12"
+            Background="Transparent"
+            Cursor="Hand"
+            RenderTransformOrigin="0.5,0.5"
+            Loaded="OnCardRealized"
+            MouseLeftButtonUp="OnCardClicked"
+            ToolTip="{Binding Name}">
+        <Grid.RenderTransform>
+          <ScaleTransform ScaleX="1" ScaleY="1" />
+        </Grid.RenderTransform>
+        <Border Background="{StaticResource Surface}"
+                BorderBrush="{StaticResource Hairline}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource Radius}">
+          <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="74" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+
+          <!-- artwork, with the initial as a stand-in until it arrives -->
+          <Border Grid.Row="0" Background="{StaticResource Sunken}" CornerRadius="9,9,0,0" ClipToBounds="True">
+            <Grid>
+              <TextBlock Style="{StaticResource Display}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                         Foreground="{StaticResource TextFaint}"
+                         Text="{Binding Initials}" />
+              <Image Source="{Binding Capsule}" Stretch="UniformToFill" />
+              <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="6"
+                      Background="#CC08060B" CornerRadius="4" Padding="6,2">
+                <Border.Style>
+                  <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsOwned}" Value="False">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Border.Style>
+                <TextBlock Text="not owned" FontSize="10" Foreground="{StaticResource Warn}" />
+              </Border>
+              <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6"
+                      Background="{StaticResource AccentFill}" CornerRadius="4" Padding="6,2">
+                <Border.Style>
+                  <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                          <Condition Binding="{Binding IsOwned}" Value="False" />
+                          <Condition Binding="{Binding IsFree}" Value="True" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Visibility" Value="Visible" />
+                      </MultiDataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Border.Style>
+                <TextBlock Text="FREE" FontSize="10" FontWeight="Bold" Foreground="#FF2B0A1C" />
+              </Border>
+              <Border x:Name="Veil" Background="{StaticResource Scrim}" Opacity="0">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+                  <TextBlock FontWeight="SemiBold" Foreground="White">
+                    <TextBlock.Style>
+                      <Style TargetType="TextBlock">
+                        <Setter Property="Text" Value="Manage" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsOwned}" Value="False">
+                            <Setter Property="Text" Value="Try anyway" />
+                          </DataTrigger>
+                          <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                              <Condition Binding="{Binding IsOwned}" Value="False" />
+                              <Condition Binding="{Binding IsFree}" Value="True" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="Text" Value="Claim free" />
+                          </MultiDataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+                  <TextBlock Text="&#xE76C;" Margin="6,1,0,0"
+                             FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11"
+                             Foreground="{StaticResource AccentBright}" />
+                </StackPanel>
+              </Border>
+            </Grid>
+          </Border>
+
+            <StackPanel Grid.Row="1" Margin="11,8,11,0">
+              <TextBlock Text="{Binding Name}"
+                         FontSize="{StaticResource FontSmall}"
+                         FontWeight="SemiBold"
+                         TextWrapping="Wrap"
+                         TextTrimming="CharacterEllipsis"
+                         MaxHeight="32" />
+              <TextBlock Style="{StaticResource Tiny}" Text="{Binding Id}" Margin="0,3,0,0" />
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- hover edge, kept separate so no shared brush is ever animated -->
+        <Border x:Name="Edge"
+                BorderBrush="{StaticResource Accent}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource Radius}"
+                IsHitTestVisible="False"
+                Opacity="0" />
+      </Grid>
+
+      <DataTemplate.Triggers>
+        <EventTrigger RoutedEvent="Grid.MouseEnter" SourceName="Card">
+          <BeginStoryboard>
+            <Storyboard>
+              <DoubleAnimation Storyboard.TargetName="Veil" Storyboard.TargetProperty="Opacity"
+                               To="1" Duration="{StaticResource Quick}" />
+              <DoubleAnimation Storyboard.TargetName="Card"
+                               Storyboard.TargetProperty="RenderTransform.ScaleX"
+                               To="1.03" Duration="{StaticResource Quick}"
+                               EasingFunction="{StaticResource EaseOut}" />
+              <DoubleAnimation Storyboard.TargetName="Card"
+                               Storyboard.TargetProperty="RenderTransform.ScaleY"
+                               To="1.03" Duration="{StaticResource Quick}"
+                               EasingFunction="{StaticResource EaseOut}" />
+              <DoubleAnimation Storyboard.TargetName="Edge" Storyboard.TargetProperty="Opacity"
+                               To="1" Duration="{StaticResource Quick}" />
+            </Storyboard>
+          </BeginStoryboard>
+        </EventTrigger>
+        <EventTrigger RoutedEvent="Grid.MouseLeave" SourceName="Card">
+          <BeginStoryboard>
+            <Storyboard>
+              <DoubleAnimation Storyboard.TargetName="Veil" Storyboard.TargetProperty="Opacity"
+                               To="0" Duration="{StaticResource Quick}" />
+              <DoubleAnimation Storyboard.TargetName="Card"
+                               Storyboard.TargetProperty="RenderTransform.ScaleX"
+                               To="1" Duration="{StaticResource Quick}" />
+              <DoubleAnimation Storyboard.TargetName="Card"
+                               Storyboard.TargetProperty="RenderTransform.ScaleY"
+                               To="1" Duration="{StaticResource Quick}" />
+              <DoubleAnimation Storyboard.TargetName="Edge" Storyboard.TargetProperty="Opacity"
+                               To="0" Duration="{StaticResource Quick}" />
+            </Storyboard>
+          </BeginStoryboard>
+        </EventTrigger>
+      </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- A row of cards: the unit the list virtualises. -->
+    <DataTemplate x:Key="GameRow">
+      <ItemsControl ItemsSource="{Binding}" ItemTemplate="{StaticResource GameCard}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+      </ItemsControl>
+    </DataTemplate>
+
+  </views:ShellWindow.Resources>
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <!-- ============ caption ============ -->
+    <Border Grid.Row="0" Style="{StaticResource CaptionBar}" MouseLeftButtonDown="DragCaption">
+      <Grid>
+        <StackPanel Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
+          <Image Source="/Assets/ZAchievements.ico" Width="20" Height="20" RenderOptions.BitmapScalingMode="HighQuality" />
+          <TextBlock Style="{StaticResource CaptionTitle}" Margin="9,0,0,0" Text="ZAchievements" />
+          <TextBlock x:Name="CaptionNote" Style="{StaticResource Caption}" Margin="10,0,0,0"
+                     VerticalAlignment="Center" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True">
+          <Button Style="{StaticResource CaptionButton}" Content="&#xE921;"
+                  Command="{x:Static SystemCommands.MinimizeWindowCommand}" />
+          <Button Style="{StaticResource CaptionButton}" Content="&#xE922;" Click="OnMaximize" />
+          <Button Style="{StaticResource CloseButton}" Content="&#xE8BB;"
+                  Command="{x:Static SystemCommands.CloseWindowCommand}" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- ============ toolbar ============ -->
+    <Grid Grid.Row="1" Margin="16,4,16,12">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" MaxWidth="340" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <TextBox x:Name="SearchField"
+               Grid.Column="0"
+               Style="{StaticResource SearchBox}"
+               Tag="Search by name, initials or app ID"
+               TextChanged="OnSearchChanged"
+               KeyDown="OnSearchKey" />
+
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+        <ToggleButton x:Name="WantGames" Style="{StaticResource PillToggle}" Content="Games"
+                      IsChecked="True" Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
+        <ToggleButton x:Name="WantDemos" Style="{StaticResource PillToggle}" Content="Demos"
+                      Margin="6,0,0,0" Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
+        <ToggleButton x:Name="WantMods" Style="{StaticResource PillToggle}" Content="Mods"
+                      Margin="6,0,0,0" Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
+        <ToggleButton x:Name="WantJunk" Style="{StaticResource PillToggle}" Content="Junk"
+                      Margin="6,0,0,0" Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
+        <ToggleButton x:Name="WantUnowned" Style="{StaticResource PillToggle}" Content="Not owned"
+                      Margin="6,0,0,0" Checked="OnUnownedFilterChanged" Unchecked="OnUnownedFilterChanged"
+                      ToolTip="Show every game in the Steam catalogue, not just yours" />
+        <ToggleButton x:Name="WantFree" Style="{StaticResource PillToggle}" Content="Free"
+                      Margin="6,0,0,0" Checked="OnFreeFilterChanged" Unchecked="OnFreeFilterChanged"
+                      ToolTip="Keep only the games the Steam store gives away" />
+      </StackPanel>
+
+      <StackPanel Grid.Column="3" Orientation="Horizontal">
+        <Button x:Name="UnlockEverythingButton"
+                Style="{StaticResource DangerButton}"
+                Content="Unlock every game"
+                Click="OnUnlockEverything" />
+        <Button x:Name="ReloadButton"
+                Style="{StaticResource IconButton}"
+                Margin="8,0,0,0"
+                Content="&#xE72C;"
+                ToolTip="Rescan the library"
+                Click="OnReload" />
+      </StackPanel>
+    </Grid>
+
+    <!-- ============ scan progress ============ -->
+    <ProgressBar x:Name="ScanBar" Grid.Row="2" Style="{StaticResource ThinProgress}"
+                 Margin="16,0,16,8" Visibility="Collapsed" />
+
+    <!-- ============ games ============ -->
+    <Grid Grid.Row="3">
+      <ListBox x:Name="GameRows"
+               Style="{StaticResource PlainList}"
+               ItemContainerStyle="{StaticResource PlainItem}"
+               ItemTemplate="{StaticResource GameRow}"
+               Margin="16,0,6,0"
+               SizeChanged="OnListResized" />
+
+      <StackPanel x:Name="EmptyState"
+                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                  Visibility="Collapsed">
+        <TextBlock Text="&#xE7BA;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                   FontSize="26" Foreground="{StaticResource TextFaint}"
+                   HorizontalAlignment="Center" />
+        <TextBlock x:Name="EmptyHeadline" Style="{StaticResource Display}" FontSize="16" Margin="0,12,0,0"
+                   HorizontalAlignment="Center" Text="Nothing to show" />
+        <TextBlock x:Name="EmptyHint" Style="{StaticResource Caption}" Margin="0,6,0,0"
+                   HorizontalAlignment="Center" />
+      </StackPanel>
+    </Grid>
+
+    <!-- ============ status ============ -->
+    <Border Grid.Row="4" Background="{StaticResource Sunken}" BorderBrush="{StaticResource Hairline}"
+            BorderThickness="0,1,0,0" Padding="16,9">
+      <Grid>
+        <TextBlock x:Name="StatusText" Style="{StaticResource Caption}" Text="Starting up…" />
+        <TextBlock x:Name="DownloadText" Style="{StaticResource Tiny}" HorizontalAlignment="Right" />
+      </Grid>
+    </Border>
+
+    <!-- ============ bulk unlock overlay ============ -->
+    <Grid x:Name="BulkOverlay" Grid.Row="0" Grid.RowSpan="5" Background="#E60B0E13" Visibility="Collapsed">
+      <Border Width="420" Background="{StaticResource Surface}" BorderBrush="{StaticResource Hairline}"
+              BorderThickness="1" CornerRadius="{StaticResource RadiusLarge}" Padding="28,24"
+              VerticalAlignment="Center" HorizontalAlignment="Center">
+        <StackPanel>
+          <TextBlock Style="{StaticResource Display}" FontSize="18" Text="Unlocking your library" />
+          <TextBlock x:Name="BulkGame" Style="{StaticResource Caption}" Margin="0,6,0,0"
+                     TextTrimming="CharacterEllipsis" />
+          <ProgressBar x:Name="BulkBar" Style="{StaticResource ThinProgress}" Margin="0,18,0,0" />
+          <Grid Margin="0,10,0,0">
+            <TextBlock x:Name="BulkCount" Style="{StaticResource Tiny}" />
+            <TextBlock x:Name="BulkTally" Style="{StaticResource Tiny}" HorizontalAlignment="Right" />
+          </Grid>
+          <Button x:Name="BulkStopButton" Style="{StaticResource GhostButton}" Content="Stop"
+                  Margin="0,20,0,0" HorizontalAlignment="Right" MinWidth="96" Click="OnStopBulk" />
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Grid>
+</views:ShellWindow>

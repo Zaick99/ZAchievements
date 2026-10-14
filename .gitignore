@@ -389,3 +389,7 @@ FodyWeavers.xsd
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# published single-file build
+/dist/
+

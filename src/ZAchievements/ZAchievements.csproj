@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <StartupObject>ZAchievements.Program</StartupObject>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <!-- steamclient.dll in the Steam root is 32-bit: the process must be too. -->
+  <PropertyGroup>
+    <Platforms>x86</Platforms>
+    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyName>ZAchievements</AssemblyName>
+    <RootNamespace>ZAchievements</RootNamespace>
+    <AssemblyTitle>ZAchievements</AssemblyTitle>
+    <Product>ZAchievements</Product>
+    <Description>A Steam achievement manager in a single executable.</Description>
+    <Authors>Zaick99</Authors>
+    <Copyright>Copyright © Rick (gibbed) 2019, Zaick99 2026 — zlib License</Copyright>
+    <Version>8.0.0</Version>
+    <RepositoryUrl>https://github.com/Zaick99/ZAchievements</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <ApplicationIcon>Assets\ZAchievements.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <!-- One file, no runtime to install, no loose DLLs. -->
+  <PropertyGroup>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>none</DebugType>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+    <EventSourceSupport>false</EventSourceSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <UseSystemResourceKeys>false</UseSystemResourceKeys>
+    <TieredPGO>true</TieredPGO>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\ZAchievements.ico" />
+  </ItemGroup>
+
+</Project>

@@ -27,8 +27,9 @@ One file: `ZAchievements.exe`. Put it anywhere except the Steam folder and run i
   switch.
 - **The whole Steam catalogue** — the *Not owned* filter widens the library from the games you own to
   all ~88 000 known apps, titles and capsules included.
-- **Free games filter** — *Free* keeps only what the store gives away; a click on one of those opens
-  Steam so you can add it to your library first.
+- **Free games filter** — *Free* keeps only what the store gives away.
+- **Claim free games** — adds Steam's free games to your account in bulk, so their achievements
+  become yours to unlock. See below for how it works and what it costs.
 - **Search that gives up less** — by title, by initials (`aoe` finds *Age of Empires*), by app id,
   accent- and case-insensitive, several terms at once.
 
@@ -50,11 +51,30 @@ ownership on its own servers and refuses writes for anything else.
 
 ---
 
+## Claiming free games
+
+Steam exposes no client API for adding a licence, so **Claim free games** does it the only honest
+way: it opens Steam's own store in an embedded browser, you sign in there, and the requests then run
+*inside that page* — the same call the store's own **Play Game** button makes. ZAchievements never
+sees your password, your Steam Guard code or your session token; the browser profile lives in
+`%LOCALAPPDATA%\ZAchievements\webview` and you can wipe it by deleting that folder.
+
+What to expect:
+
+- **It is slow on purpose.** One request every 1.2 s, and Steam caps free activations anyway. When
+  the cap hits, the run pauses 90 s and carries on; if Steam keeps refusing, it stops and tells you
+  to come back later.
+- **It resumes.** Every app already offered is remembered in `claimed.txt`, so pressing *Claim them*
+  again picks up where it stopped. *Start over* forgets that list.
+- **Games you already own are skipped** before the first request goes out.
+- **Your library will grow a lot.** All of Steam's free games is tens of thousands of entries, and
+  removing a licence afterwards is a one-at-a-time job on Steam's support site. Use the *Free* filter
+  first if you only want a slice of it.
+
 ## Notes
 
-- **Games you don't own.** You can list and open them, but Steam rejects the writes. For free games
-  ZAchievements offers to open the Steam client so you can add the licence first — claiming licences
-  in bulk needs a logged-in Steam session, which this tool deliberately does not handle.
+- **Games you don't own.** You can list and open them, but Steam rejects every write: ownership is
+  checked on Valve's servers. Claim the licence first.
 - **Protected achievements.** Online and anti-cheat protected games validate achievements on Valve's
   servers. ZAchievements tries, reports how many were refused, and moves on.
 - **Unlock dates.** Steam records them. Nothing here can undo that.

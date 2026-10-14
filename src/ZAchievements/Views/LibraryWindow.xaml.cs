@@ -458,6 +458,25 @@ namespace ZAchievements.Views
             }
         }
 
+        // ============================ claiming ============================
+
+        private async void OnClaimFree(object sender, RoutedEventArgs e)
+        {
+            this.ClaimFreeButton.IsEnabled = false;
+            var ready = await this.LoadFreeGamesAsync();
+            this.ClaimFreeButton.IsEnabled = true;
+
+            if (ready == false)
+            {
+                return;
+            }
+
+            new ClaimWindow(this._steam, this._freeApps) { Owner = this }.ShowDialog();
+
+            // Licences acquired in there change what the library owns.
+            await this.ScanAsync();
+        }
+
         // ============================ bulk unlock ============================
 
         private async void OnUnlockEverything(object sender, RoutedEventArgs e)

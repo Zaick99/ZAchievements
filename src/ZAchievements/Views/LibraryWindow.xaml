@@ -240,6 +240,12 @@
       </StackPanel>
 
       <StackPanel Grid.Column="3" Orientation="Horizontal">
+        <Button x:Name="ClaimFreeButton"
+                Style="{StaticResource GhostButton}"
+                Content="Claim free games"
+                ToolTip="Add every free Steam game to your account"
+                Margin="0,0,8,0"
+                Click="OnClaimFree" />
         <Button x:Name="UnlockEverythingButton"
                 Style="{StaticResource DangerButton}"
                 Content="Unlock every game"
